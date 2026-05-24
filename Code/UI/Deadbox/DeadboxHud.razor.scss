@@ -1,0 +1,46 @@
+DeadboxHud {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	pointer-events: none;
+	font-family: Poppins;
+	color: white;
+}
+
+.deadbox-hud__score {
+	position: absolute;
+	left: 32px;
+	top: 32px;
+	min-width: 220px;
+	padding: 14px 18px;
+	border-radius: 8px;
+	background-color: rgba( 0, 0, 0, 0.68 );
+	backdrop-filter: blur( 8px );
+	flex-direction: column;
+	gap: 4px;
+}
+
+.deadbox-hud__label {
+	font-size: 14px;
+	font-weight: 700;
+	text-transform: uppercase;
+	opacity: 0.72;
+}
+
+.deadbox-hud__value {
+	font-size: 42px;
+	font-weight: 800;
+	line-height: 42px;
+}
+
+.deadbox-hud__stats {
+	margin-top: 4px;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 20px;
+	font-size: 15px;
+	font-weight: 700;
+	opacity: 0.86;
+}

@@ -1,0 +1,70 @@
+@using Sandbox
+@using System
+
+@inherits PanelComponent
+
+<root>
+	@if ( HasGameManager )
+	{
+		<div class="deadbox-hud__score">
+			<div class="deadbox-hud__label">Score</div>
+			<div class="deadbox-hud__value">@ScoreText</div>
+			<div class="deadbox-hud__stats">
+				<span>Wave @WaveText</span>
+				<span>@KillsText kills</span>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	private bool HasGameManager { get; set; }
+	private int Score { get; set; }
+	private int Kills { get; set; }
+	private int Wave { get; set; }
+	private int HudBuildVersion { get; set; }
+
+	private string ScoreText => Score.ToString( "N0" );
+	private string KillsText => Kills.ToString( "N0" );
+	private string WaveText => Wave.ToString( "N0" );
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		var gameManager = DeadboxGameManager.Instance;
+
+		if ( !gameManager.IsValid() )
+		{
+			SetHudState( false, 0, 0, 0 );
+			return;
+		}
+
+		SetHudState( true, gameManager.Score, gameManager.Kills, gameManager.Wave );
+	}
+
+	private void SetHudState( bool hasGameManager, int score, int kills, int wave )
+	{
+		if (
+			HasGameManager == hasGameManager &&
+			Score == score &&
+			Kills == kills &&
+			Wave == wave
+		)
+		{
+			return;
+		}
+
+		HasGameManager = hasGameManager;
+		Score = score;
+		Kills = kills;
+		Wave = wave;
+		HudBuildVersion++;
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine( HudBuildVersion, HasGameManager, Score, Kills, Wave );
+	}
+}

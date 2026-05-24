@@ -1,4 +1,5 @@
 using Sandbox;
+using Sandbox.UI.Deadbox;
 
 public sealed class DeadboxGameManager : Component
 {
@@ -10,6 +11,10 @@ public sealed class DeadboxGameManager : Component
 	[Property] public float TimeBetweenWaves { get; set; } = 4f;
 	[Property] public int BaseZombiesPerWave { get; set; } = 6;
 	[Property] public int ZombiesAddedPerWave { get; set; } = 3;
+	[Property] public float SpawnHeightAbovePlane { get; set; } = 24f;
+
+	[Header( "HUD" )]
+	[Property] public bool AutoCreateHud { get; set; } = true;
 
 	public int Wave { get; private set; }
 	public int Score { get; private set; }
@@ -20,17 +25,24 @@ public sealed class DeadboxGameManager : Component
 	private int AliveZombies { get; set; }
 	private TimeSince TimeSinceWaveEnded { get; set; }
 	private TimeSince TimeSinceSpawnedZombie { get; set; }
+	private GameObject HudObject { get; set; }
 
 	protected override void OnStart()
 	{
 		Instance = this;
 		TimeSinceWaveEnded = TimeBetweenWaves;
+
+		if ( AutoCreateHud )
+			CreateHudIfNeeded();
 	}
 
 	protected override void OnDestroy()
 	{
 		if ( Instance == this )
 			Instance = null;
+
+		if ( HudObject.IsValid() )
+			HudObject.Destroy();
 	}
 
 	protected override void OnUpdate()
@@ -54,6 +66,16 @@ public sealed class DeadboxGameManager : Component
 		TimeSinceWaveEnded = 0f;
 	}
 
+	private void CreateHudIfNeeded()
+	{
+		if ( Scene.GetAllComponents<DeadboxHud>().Any() )
+			return;
+
+		HudObject = new GameObject( "Deadbox HUD" );
+		HudObject.Components.Create<ScreenPanel>();
+		HudObject.Components.Create<DeadboxHud>();
+	}
+
 	private void StartNextWave()
 	{
 		Wave++;
@@ -72,7 +94,7 @@ public sealed class DeadboxGameManager : Component
 		RemainingToSpawn--;
 
 		var spawnPoint = GetSpawnPoint();
-		var position = spawnPoint.IsValid() ? spawnPoint.WorldPosition : GetFallbackSpawnPosition();
+		var position = GetSpawnPosition( spawnPoint );
 		var zombieObject = ZombiePrefab.IsValid()
 			? ZombiePrefab.Clone( position )
 			: new GameObject( "Zombie" );
@@ -89,6 +111,13 @@ public sealed class DeadboxGameManager : Component
 			return null;
 
 		return SpawnPoints[Game.Random.Int( 0, SpawnPoints.Count - 1 )];
+	}
+
+	private Vector3 GetSpawnPosition( GameObject spawnPoint )
+	{
+		var position = spawnPoint.IsValid() ? spawnPoint.WorldPosition : GetFallbackSpawnPosition();
+		position.z = SpawnHeightAbovePlane;
+		return position;
 	}
 
 	private static Vector3 GetFallbackSpawnPosition()
